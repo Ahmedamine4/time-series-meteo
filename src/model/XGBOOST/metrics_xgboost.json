@@ -1,0 +1,61 @@
+{
+  "model": "xgboost",
+  "train_period": "2021-2023",
+  "validation_period": "2024",
+  "test_period": "2025",
+  "scale_pos_weight": 33.70339222614841,
+  "best_threshold": 0.8485917448997498,
+  "pr_auc_validation": 0.39291127974588913,
+  "f1_validation": 0.45282617929786523,
+  "pr_auc_test": 0.3151200312443152,
+  "features": [
+    "u10",
+    "v10",
+    "t2m",
+    "rh2m",
+    "u850",
+    "v850",
+    "u950",
+    "v950",
+    "psurf",
+    "u_gust60",
+    "v_gust60",
+    "tke20m",
+    "edr20m",
+    "pblh",
+    "lat",
+    "lon",
+    "elevation_m",
+    "hour_sin",
+    "hour_cos",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "classification_report_test": {
+    "0": {
+      "precision": 0.9736913022973792,
+      "recall": 0.9884754804732918,
+      "f1-score": 0.9810276948140103,
+      "support": 116968.0
+    },
+    "1": {
+      "precision": 0.4962630792227205,
+      "recall": 0.29829290206648695,
+      "f1-score": 0.372615039281706,
+      "support": 4452.0
+    },
+    "accuracy": 0.963169164882227,
+    "macro avg": {
+      "precision": 0.7349771907600499,
+      "recall": 0.6433841912698894,
+      "f1-score": 0.6768213670478581,
+      "support": 121420.0
+    },
+    "weighted avg": {
+      "precision": 0.9561858629206013,
+      "recall": 0.963169164882227,
+      "f1-score": 0.9587195648318837,
+      "support": 121420.0
+    }
+  }
+}
