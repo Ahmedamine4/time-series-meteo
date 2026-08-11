@@ -32,9 +32,7 @@ IMPORTANCE_FILE = "importance_features_xgboost.csv"
 CONFUSION_FILE = "confusion_matrix_xgboost_2025.png"
 
 
-# ============================================================
 # 2. VARIABLES UTILISÉES
-# ============================================================
 
 FEATURES = [
     "u10",
@@ -61,9 +59,7 @@ FEATURES = [
 ]
 
 
-# ============================================================
 # 3. LIRE LE DATASET
-# ============================================================
 
 df = pd.read_parquet(DATASET_FILE)
 
@@ -78,9 +74,7 @@ if TARGET not in df.columns:
     )
 
 
-# ============================================================
-# 4. CONVERTIR DATETIME ET CRÉER LES VARIABLES TEMPORELLES
-# ============================================================
+# 4. CRÉER LES VARIABLES TEMPORELLES
 
 df[DATE_COLUMN] = pd.to_datetime(
     df[DATE_COLUMN],
@@ -91,30 +85,11 @@ df = df.dropna(
     subset=[DATE_COLUMN, TARGET]
 ).copy()
 
-df["year"] = df[DATE_COLUMN].dt.year
-df["hour"] = df[DATE_COLUMN].dt.hour
-df["day_of_year"] = df[DATE_COLUMN].dt.dayofyear
-
-df["hour_sin"] = np.sin(
-    2 * np.pi * df["hour"] / 24
-)
-
-df["hour_cos"] = np.cos(
-    2 * np.pi * df["hour"] / 24
-)
-
-df["doy_sin"] = np.sin(
-    2 * np.pi * df["day_of_year"] / 365.25
-)
-
-df["doy_cos"] = np.cos(
-    2 * np.pi * df["day_of_year"] / 365.25
-)
+df["hour"] = df[DATE_COLUMN].dt.hour # Ajout de la colonne "hour" pour l'heure de la journée
+df["day_of_year"] = df[DATE_COLUMN].dt.dayofyear # Ajout de la colonne "day_of_year" pour le jour de l'année
 
 
-# ============================================================
 # 5. VÉRIFIER LES VARIABLES
-# ============================================================
 
 features = [
     colonne
@@ -157,9 +132,7 @@ df = df.dropna(
 df[TARGET] = df[TARGET].astype(int)
 
 
-# ============================================================
 # 6. SPLIT CHRONOLOGIQUE
-# ============================================================
 
 train = df[
     df["year"].between(2021, 2023)
@@ -187,20 +160,7 @@ if test.empty:
     raise ValueError("Le dataset de test est vide.")
 
 
-# ============================================================
-# 7. VÉRIFIER LA PROPORTION DE RAFALES
-# ============================================================
-
-print()
-print("Taux de rafales :")
-print("Train :", train[TARGET].mean())
-print("Validation :", validation[TARGET].mean())
-print("Test :", test[TARGET].mean())
-
-
-# ============================================================
-# 8. PRÉPARER X ET Y
-# ============================================================
+# 7. PRÉPARER X ET Y
 
 X_train = train[features]
 y_train = train[TARGET].to_numpy()
@@ -212,9 +172,7 @@ X_test = test[features]
 y_test = test[TARGET].to_numpy()
 
 
-# ============================================================
-# 9. REMPLIR LES VALEURS MANQUANTES
-# ============================================================
+# 8. REMPLIR LES VALEURS MANQUANTES
 
 imputer = SimpleImputer(
     strategy="median"
@@ -233,9 +191,7 @@ X_test_imputed = imputer.transform(
 )
 
 
-# ============================================================
-# 10. CALCULER SCALE_POS_WEIGHT
-# ============================================================
+# 9. CALCULER SCALE_POS_WEIGHT car le dataset est déséquilibré
 
 nb_negatifs = int(
     (y_train == 0).sum()
@@ -263,20 +219,19 @@ print(
 )
 
 
-# ============================================================
-# 11. CRÉER ET ENTRAÎNER XGBOOST
-# ============================================================
+
+# 10 . CRÉER ET ENTRAÎNER XGBOOST
 
 model = XGBClassifier(
-    n_estimators=500,
-    learning_rate=0.05,
-    max_depth=6,
-    min_child_weight=2,
-    subsample=0.8,
-    colsample_bytree=0.8,
+    n_estimators=500, # Nombre d'arbres
+    learning_rate=0.05, # Taux d'apprentissage
+    max_depth=6, # Profondeur maximale des arbres
+    min_child_weight=2, # Poids minimum d'un enfant
+    subsample=0.8, # Proportion d'échantillons utilisés pour chaque arbre ( ici 80% )
+    colsample_bytree=0.8, # Proportion de caractéristiques utilisées pour chaque arbre ( ici 80% )
     gamma=0,
-    reg_alpha=0,
-    reg_lambda=1,
+    reg_alpha=0, # Poids de la régularisation L1
+    reg_lambda=1, # Poids de la régularisation L2
     scale_pos_weight=scale_pos_weight,
     objective="binary:logistic",
     eval_metric="logloss",
@@ -304,9 +259,7 @@ print()
 print("Entraînement terminé.")
 
 
-# ============================================================
-# 12. CHERCHER LE MEILLEUR SEUIL SUR VALIDATION
-# ============================================================
+# 11. CHERCHER LE MEILLEUR SEUIL SUR VALIDATION
 
 proba_validation = model.predict_proba(
     X_validation_imputed
@@ -370,9 +323,7 @@ print(
 )
 
 
-# ============================================================
-# 13. ÉVALUER SUR LE TEST 2025
-# ============================================================
+# 12. ÉVALUER SUR LE TEST 2025
 
 proba_test = model.predict_proba(
     X_test_imputed
@@ -412,9 +363,7 @@ print("Matrice de confusion :")
 print(test_confusion_matrix)
 
 
-# ============================================================
-# 14. ENREGISTRER LA MATRICE DE CONFUSION
-# ============================================================
+# 13. ENREGISTRER LA MATRICE DE CONFUSION
 
 display = ConfusionMatrixDisplay(
     confusion_matrix=test_confusion_matrix,
@@ -434,9 +383,7 @@ plt.savefig(
 plt.close()
 
 
-# ============================================================
-# 15. IMPORTANCE DES VARIABLES
-# ============================================================
+# 14. IMPORTANCE DES VARIABLES
 
 importance_df = pd.DataFrame({
     "feature": features,
@@ -458,9 +405,8 @@ print(
 )
 
 
-# ============================================================
-# 16. ENREGISTRER LES PRÉDICTIONS DU TEST
-# ============================================================
+
+# 15. ENREGISTRER LES PRÉDICTIONS DU TEST
 
 result_columns = [
     colonne
@@ -484,9 +430,7 @@ predictions.to_csv(
 )
 
 
-# ============================================================
-# 17. ENREGISTRER LE MODÈLE ET LES MÉTRIQUES
-# ============================================================
+# 16. ENREGISTRER LE MODÈLE ET LES MÉTRIQUES
 
 joblib.dump(
     {

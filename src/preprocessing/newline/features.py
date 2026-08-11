@@ -36,7 +36,11 @@ features_arome = [
     "edr20m",
     "pblh",
     "distance_km",
-    "elevation_m"
+    "elevation_m",
+    "wind_speed_ms",
+    "gust_speed_ms",
+    "wind_dir_deg"
+
 ]
 
 # Variables créées à partir de datetime.
@@ -221,4 +225,3 @@ print("Nombre de lignes final :", df_final.height)
 print("Nombre de colonnes final :", len(df_final.columns))
 print("Colonnes finales :")
 print(df_final.columns)
-print("Fichier créé :", OUTPUT_FILE)
